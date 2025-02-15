@@ -1,0 +1,22 @@
+1. 0xc0000008, PHYS_BASE + 8
+2. eip=0x8048915
+3.
+void _start(int argc, char* argv[]) { exit(main(argc, argv)); }
+ 804890f:	55                   	push   %ebp
+ 8048910:	89 e5                	mov    %esp,%ebp
+ 8048912:	83 ec 18             	sub    $0x18,%esp
+>8048915:	8b 45 0c             	mov    0xc(%ebp),%eax
+ 8048918:	89 44 24 04          	mov    %eax,0x4(%esp)
+ 804891c:	8b 45 08             	mov    0x8(%ebp),%eax
+ 804891f:	89 04 24             	mov    %eax,(%esp)
+ 8048922:	e8 6d f7 ff ff       	call   8048094 <main>
+ 8048927:	89 04 24             	mov    %eax,(%esp)
+ 804892a:	e8 d4 22 00 00       	call   804ac03 <exit>
+4. proj-pregame/src/lib/user/entry.c
+5.
+(gdb) p $ebp
+$2 = (void *) 0xbffffffc
+(gdb) p $ebp + 0xc
+$3 = (void *) 0xc0000008
+
+mov 0xc(%ebp),%eax 将argc参数（在栈中偏移量为0xc的位置）加载到%eax寄存器，然后超出PHYS_BASE范围了。
