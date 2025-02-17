@@ -100,7 +100,7 @@ static void start_process(void* file_name_) {
     if_.cs = SEL_UCSEG;
     if_.eflags = FLAG_IF | FLAG_MBS;
     success = load(file_name, &if_.eip, &if_.esp);
-    if_.esp -= 20;
+
     // set args's address's data default 1, if doesn't pass args argument will exit(1)
     asm volatile("movl $1, 0x4(%0)" : : "g"(if_.esp) : "memory");
   }
@@ -476,7 +476,7 @@ static bool setup_stack(void** esp) {
   if (kpage != NULL) {
     success = install_page(((uint8_t*)PHYS_BASE) - PGSIZE, kpage, true);
     if (success)
-      *esp = PHYS_BASE;
+      *esp = PHYS_BASE - 20;
     else
       palloc_free_page(kpage);
   }
