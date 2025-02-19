@@ -38,6 +38,31 @@ WordCount *word_counts = NULL;
 /* The maximum length of each word in a file */
 #define MAX_WORD_LEN 64
 
+static char* read_word(FILE* infile) {
+    char* word = (char*) malloc(MAX_WORD_LEN + 1);
+    int i;
+    for (i = 0; i < MAX_WORD_LEN; i++) {
+        char c = fgetc(infile);
+        if (!isalpha(c)) {
+            break;
+        }
+        c = tolower(c);
+        word[i] = c;
+    }
+    word[i + 1] = '\0';
+    
+    return word;
+}
+
+static WordCount* create_word_count(WordCount* current, char* word) {
+    WordCount* new_word = (WordCount*) malloc(sizeof(WordCount));
+    new_word->word = word;
+    new_word->count = 1;
+    new_word->next = NULL;
+
+    return new_word;
+}
+
 /*
  * 3.1.1 Total Word Count
  *
@@ -45,9 +70,58 @@ WordCount *word_counts = NULL;
  * Useful functions: fgetc(), isalpha().
  */
 int num_words(FILE* infile) {
-  int num_words = 0;
+    int num_words = 0;
 
-  return num_words;
+    word_counts = (WordCount*) malloc(sizeof(WordCount));
+    word_counts->next = NULL;
+
+    word_counts->word = read_word(infile);
+    word_counts->count = 1;
+
+    char c;
+    WordCount* current = NULL;
+    while (c != EOF)
+    {
+        char* word = (char*) malloc(MAX_WORD_LEN + 1);
+        int i;
+        for (i = 0; i < MAX_WORD_LEN; i++) {
+            c = fgetc(infile);
+            if (!isalpha(c)) {
+                break;
+            }
+            c = tolower(c);
+            word[i] = c;
+        }
+        word[i + 1] = '\0';
+
+        current = word_counts;
+        bool find_flag = false;
+        while (true)
+        {
+            if (strcmp(current->word, word) == 0) {
+                current->count++;
+                find_flag = true;
+                break;
+            }
+            if (current->next == NULL) {
+                break;
+            }
+            current = current->next;
+        }
+
+        if (!find_flag) {
+            current->next = create_word_count(current, word);
+        }
+    }
+    
+    current = word_counts;
+    while (current->next != NULL)
+    {
+        num_words++;
+        current = current->next;
+    }
+    
+    return num_words;
 }
 
 /*
@@ -137,10 +211,13 @@ int main (int argc, char *argv[]) {
     // At least one file specified. Useful functions: fopen(), fclose().
     // The first file can be found at argv[optind]. The last file can be
     // found at argv[argc-1].
+    infile = fopen(argv[optind], "r");
   }
 
   if (count_mode) {
+    total_words = num_words(infile);
     printf("The total number of words is: %i\n", total_words);
+    fclose(infile);
   } else {
     wordcount_sort(&word_counts, wordcount_less);
 
